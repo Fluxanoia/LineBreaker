@@ -12,6 +12,7 @@
 typedef struct ResourceManager_ {
     TTF_Font* base;
 
+    SDL_Texture* board_back;
     SDL_Texture* boxes;
 
     SDL_Texture* button;

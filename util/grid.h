@@ -12,6 +12,7 @@
 #define TETROMINO_SIZE  4
 #define TETROMINO_COUNT 7
 
+#include              "tween.h"
 #include "../resourceManager.h"
 
 typedef enum TetrominoType_ { NO_PIECE, I, O, T, J, L, S, Z } TetrominoType;
@@ -30,6 +31,13 @@ typedef struct Grid_ {
     bool redraw;
     int grid[GRID_HEIGHT][GRID_WIDTH];
     
+    int init_x;
+    int init_y;
+    TweenValue* x;
+    TweenValue* y;
+
+    bool gameover;
+
     int ticks;
     int speed;
     bool double_time;
@@ -38,11 +46,16 @@ typedef struct Grid_ {
     bool moveRight;
     bool rotated;
 
+    int boardBackWidth;
+    int boardBackHeight;
+
     Tetromino current;
     TetrominoType next;
 } Grid;
 
 Grid* initialiseGrid();
+void wakeGrid(Grid* grid);
+void sleepGrid(Grid* grid);
 void updateGrid(Grid* grid);
 void drawGrid(Grid* grid, Display* d);
 void Grid_keyEvent(Grid* grid, SDL_KeyboardEvent e);

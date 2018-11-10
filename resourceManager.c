@@ -35,6 +35,7 @@ ResourceManager* initialiseResourceManager(Display* d) {
     rm->hoverButton = loadPNGTexture(d, "res/image/button_h.png");
     
     rm->boxes = loadBMPTexture(d, "res/image/boxes.bmp");
+    rm->board_back = loadPNGTexture(d, "res/image/boardback.png");
     return rm;
 }
 
@@ -47,6 +48,7 @@ void freeResourceManager(ResourceManager* rm) {
     SDL_DestroyTexture(rm->button);
     SDL_DestroyTexture(rm->hoverButton);
     SDL_DestroyTexture(rm->boxes);
+    SDL_DestroyTexture(rm->board_back);
     free(rm);
 }
 

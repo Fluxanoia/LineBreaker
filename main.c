@@ -13,6 +13,7 @@
 #define UPDATE_DELTA_TIME  (1000 / UPDATES_PER_SECOND)
 
 bool running = false;
+bool PRINT_APS = false;
 
 Display* display = NULL;
 GSM* gsm = NULL;
@@ -97,7 +98,7 @@ void run() {
         }
         while (SDL_GetTicks() - lastSecond >= 1000) {
             lastSecond += 1000;
-            printf("Actions in the last seconds : %d\n", APS);
+            if (PRINT_APS) printf("Actions in the last seconds : %d\n", APS);
             APS = 0;
         }
     }
@@ -105,9 +106,15 @@ void run() {
 }
 
 // Initialise the game
-int main() {
+int main(int argc, char const *argv[]) {
     printf("\n%s, starting up...\n", GAME_TITLE);
     
+    StateType startingState = LOADING;
+    for (int i = 1; i < argc; i++) {
+        if (strncmp(argv[i], "-aps", 4) == 0) PRINT_APS = true;
+        if (strncmp(argv[i], "-l", 2) == 0)   startingState = MENU;
+    }
+
     printf("Initialising SDL...\n");
     I_(SDL_Init(SDL_INIT_VIDEO));
     I_(TTF_Init());
@@ -136,7 +143,7 @@ int main() {
     srand(time(NULL));
 
     printf("Initialising the GSM...\n");
-    gsm = initialiseGSM(display, LOADING); 
+    gsm = initialiseGSM(display, startingState); 
 
     printf("Start up complete, running the game...\n");
     run();

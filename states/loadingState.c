@@ -32,6 +32,7 @@ void wakeLoadingState(LoadingState* ls) {
 }
 
 void sleepLoadingState(LoadingState* ls) {
+    ls->nextState = NIL;
     setTweenValue(ls->bgAlpha, 0);
     setTweenValue(ls->lineX, -(ls->lineX_width + 10));
     setTweenValue(ls->breakerX, SCREEN_WIDTH + 10);

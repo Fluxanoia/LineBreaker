@@ -4,23 +4,45 @@
 
 void resetTetromino(Tetromino* t);
 
-Grid* initialiseGrid() {
+Grid* initialiseGrid(int x, int y, Display* d) {
     Grid* g = malloc(sizeof(Grid));
     g->redraw = true;
+
+    g->init_x = x;
+    g->init_y = y;
+    g->x = initialiseTween(x);
+    g->y = initialiseTween(y);
+
+    SDL_QueryTexture(d->resMan->board_back, NULL, NULL,
+            &g->boardBackWidth, &g->boardBackHeight);
+
+    return g;
+}
+
+void wakeGrid(Grid* g) {
     resetTetromino(&g->current);
     g->next = NO_PIECE;
+
+    g->gameover = false;
+
     g->ticks = 0;
     g->speed = 30;
     g->double_time = false;
     g->moveLeft = false;
     g->moveRight = false;
     g->rotated = false;
+
     for (int i = 0; i < GRID_HEIGHT; i++) {
         for (int j = 0; j < GRID_WIDTH; j++) {
             g->grid[i][j] = 0;
         }
     }
-    return g;
+}
+
+void sleepGrid(Grid* g) {
+    setTweenValue(g->x, g->init_x);
+    setTweenValue(g->y, g->init_y);
+    g->y->id = 0;
 }
 
 void setTetrominoBoxes(Tetromino* t) {
@@ -161,7 +183,7 @@ void fillCurrentTetromino(Grid* grid) {
     if (grid->current.tet_type == NO_PIECE) {
         grid->current.tet_type = grid->next;
         grid->current.bound_x = (GRID_WIDTH - getBoundSize(grid->next)) >> 1;
-        grid->current.bound_y = 3;
+        grid->current.bound_y = 2;
         grid->current.colour = (rand() % GRID_MAX) + 1;
         setTetrominoBoxes(&grid->current);
         grid->next = NO_PIECE;
@@ -201,6 +223,16 @@ void clearLine(Grid* g, int c_i) {
 void updateGrid(Grid* grid) {
     grid->ticks = grid->ticks + 1;
 
+    updateTweenValue(grid->x);
+    grid->redraw |= TweenValue_dropRedraw(grid->x);
+    updateTweenValue(grid->y);
+    grid->redraw |= TweenValue_dropRedraw(grid->y);
+
+    if (grid->y->id == 1) {
+        if (arrived(grid->y)) grid->gameover = true;
+        return;
+    }
+
     fillNextTetromino(grid);
     fillCurrentTetromino(grid);
     fillNextTetromino(grid);
@@ -222,6 +254,7 @@ void updateGrid(Grid* grid) {
                 bj = grid->current.bound_x + grid->current.box_xs[i];                
                 grid->grid[bi][bj] = grid->current.colour;
             }
+            grid->double_time = false;
             for (int i = GRID_HEIGHT - 1; i > -1; i--) {
                 for (int j = 0; j < GRID_WIDTH; j++) {
                     if (grid->grid[i][j] == 0) break;
@@ -231,12 +264,19 @@ void updateGrid(Grid* grid) {
                     }
                 }
             }
+            for (int j = 0; j < GRID_WIDTH; j++) {
+                if (grid->grid[HIDDEN_ROWS - 1][j] != 0) {
+                    grid->y->id = 1;
+                    moveTweenValue(grid->y, EASE_IN, -SCREEN_HEIGHT, 60, 20);
+                    break;
+                }
+            }
             resetTetromino(&grid->current);
         }
     }
 }
 
-void drawTetromino(Tetromino* t, Display* d) {
+void drawTetromino(Grid* g, Tetromino* t, Display* d) {
     if (t->tet_type == NO_PIECE) return;
     SDL_Rect srcrect = (SDL_Rect) { 0, 0, GRID_BOX_SIZE, GRID_BOX_SIZE };
     SDL_Rect dstrect = (SDL_Rect) { 0, 0, GRID_BOX_SIZE, GRID_BOX_SIZE };
@@ -247,27 +287,37 @@ void drawTetromino(Tetromino* t, Display* d) {
         if (draw_y < HIDDEN_ROWS) continue;
         srcrect.x = t->colour * GRID_BOX_SIZE;
         dstrect.x = (SCREEN_WIDTH - GRID_WIDTH * GRID_BOX_SIZE) / 2
-                + draw_x * GRID_BOX_SIZE;
+                + draw_x * GRID_BOX_SIZE +  + getTweenValue(g->x);
         dstrect.y = (SCREEN_HEIGHT - (GRID_HEIGHT - HIDDEN_ROWS) * GRID_BOX_SIZE)
-                / 2 + (draw_y - HIDDEN_ROWS) * GRID_BOX_SIZE;
+                / 2 + (draw_y - HIDDEN_ROWS) * GRID_BOX_SIZE +  + getTweenValue(g->y);
         SDL_RenderCopy(d->renderer, d->resMan->boxes, &srcrect, &dstrect);
     }
 }
 
 void drawGrid(Grid* grid, Display* d) {
-    SDL_Rect srcrect = (SDL_Rect) { 0, 0, GRID_BOX_SIZE, GRID_BOX_SIZE };
-    SDL_Rect dstrect = (SDL_Rect) { 0, 0, GRID_BOX_SIZE, GRID_BOX_SIZE };
+    int g_x, g_y;
+    SDL_Rect srcrect, dstrect;
+
+    g_x = (SCREEN_WIDTH - grid->boardBackWidth) / 2 + getTweenValue(grid->x);
+    g_y = (SCREEN_HEIGHT - grid->boardBackHeight) / 2 + getTweenValue(grid->y);
+    
+    dstrect = (SDL_Rect) { g_x, g_y - 50, grid->boardBackWidth, grid->boardBackHeight };
+    SDL_RenderCopy(d->renderer, d->resMan->board_back, NULL, &dstrect);
+
+    g_x = (SCREEN_WIDTH - GRID_WIDTH * GRID_BOX_SIZE) / 2 + getTweenValue(grid->x);
+    g_y = (SCREEN_HEIGHT - (GRID_HEIGHT - HIDDEN_ROWS) * GRID_BOX_SIZE) / 2 +
+            getTweenValue(grid->y);
+    srcrect = (SDL_Rect) { 0, 0, GRID_BOX_SIZE, GRID_BOX_SIZE };
+    dstrect = (SDL_Rect) { 0, 0, GRID_BOX_SIZE, GRID_BOX_SIZE };
     for (int i = HIDDEN_ROWS; i < GRID_HEIGHT; i++) {
         for (int j = 0; j < GRID_WIDTH; j++) {
             srcrect.x = grid->grid[i][j] * GRID_BOX_SIZE;
-            dstrect.x = (SCREEN_WIDTH - GRID_WIDTH * GRID_BOX_SIZE) / 2
-                    + j * GRID_BOX_SIZE;
-            dstrect.y = (SCREEN_HEIGHT - (GRID_HEIGHT - HIDDEN_ROWS) * GRID_BOX_SIZE)
-                    / 2 + (i - HIDDEN_ROWS) * GRID_BOX_SIZE;
+            dstrect.x = g_x + j * GRID_BOX_SIZE;
+            dstrect.y = g_y + (i - HIDDEN_ROWS) * GRID_BOX_SIZE;
             SDL_RenderCopy(d->renderer, d->resMan->boxes, &srcrect, &dstrect);
         }
     }
-    drawTetromino(&grid->current, d);
+    drawTetromino(grid, &grid->current, d);
 }
 
 void Grid_keyEvent(Grid* grid, SDL_KeyboardEvent e) {
@@ -286,7 +336,7 @@ void Grid_keyEvent(Grid* grid, SDL_KeyboardEvent e) {
         break;
         case SDLK_UP:
             if (e.type == SDL_KEYUP) grid->rotated = false;
-            if (e.type == SDL_KEYDOWN) {
+            if (e.type == SDL_KEYDOWN && !grid->rotated) {
                 grid->rotated = true;
                 grid->redraw |= rotateTetromino(grid, &grid->current);
             }
@@ -303,5 +353,7 @@ bool Grid_dropRedraw(Grid* g) {
 }
 
 void freeGrid(Grid* grid) {
+    freeTweenValue(grid->x);
+    freeTweenValue(grid->y);
     free(grid);
 }

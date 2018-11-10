@@ -47,6 +47,8 @@ void wakeMenuState(MenuState* ms) {
 }  
 
 void sleepMenuState(MenuState* ms) {
+    ms->nextState = NIL;
+    ms->coverSlide->id = 0;
     setTweenValue(ms->coverSlide, SLIDE_OFF);
     for (int i = 0; i < ms->buttonManager->numberOf; i++) {
         setTweenValue(ms->buttonManager->buttons[i]->x, BUTTON_OFF_X);
