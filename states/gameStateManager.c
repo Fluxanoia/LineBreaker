@@ -149,7 +149,7 @@ void updateGSM(GSM* gsm) {
 void drawGSM(GSM* gsm) {
     if (gsm->redraw) {
         gsm->redraw = false;
-        SDL_RenderClear(gsm->display->renderer);
+        //SDL_RenderClear(gsm->display->renderer);
     } else {
         return;
     }

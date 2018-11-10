@@ -36,6 +36,7 @@ void SoloState_mouseButtonEvent(SoloState* ss, SDL_MouseButtonEvent e) {
 }
 
 void SoloState_keyEvent(SoloState* ss, SDL_KeyboardEvent e) {
+    Grid_keyEvent(ss->grid, e);
 }
 
 bool SoloState_dropRedraw(SoloState* ss) {

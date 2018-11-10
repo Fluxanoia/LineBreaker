@@ -2,16 +2,19 @@
 #include <stdbool.h>
 #include    "grid.h"
 
-void setTetrominoBoxes(Tetromino* t);
+void resetTetromino(Tetromino* t);
 
 Grid* initialiseGrid() {
     Grid* g = malloc(sizeof(Grid));
     g->redraw = true;
-    g->current = (Tetromino) { NO_PIECE, 0, 0, 0, 0 };
-    setTetrominoBoxes(&g->current);
+    resetTetromino(&g->current);
     g->next = NO_PIECE;
     g->ticks = 0;
     g->speed = 30;
+    g->double_time = false;
+    g->moveLeft = false;
+    g->moveRight = false;
+    g->rotated = false;
     for (int i = 0; i < GRID_HEIGHT; i++) {
         for (int j = 0; j < GRID_WIDTH; j++) {
             g->grid[i][j] = 0;
@@ -20,36 +23,11 @@ Grid* initialiseGrid() {
     return g;
 }
 
-int getBoundSize(TetrominoType tt) {
-    switch (tt) {
-        case I: 
-            return 4;
-        case O: 
-            return 2;
-        case T:
-        case J:
-        case L:
-        case S:
-        case Z:
-            return 3;
-        case NO_PIECE:
-            return 0;
-    }
-}
-
-void rotateTetromino(Tetromino* t) {
-    float r_x = 0, r_y = 0, p_x = 0, p_y = 0;
-    p_x = ((float) getBoundSize(t->tet_type)) / 2.0;
-    p_y = p_x;
-    for (int i = 0; i < 4; i++) {
-        r_x = -(((float) t->box_ys[i]) - p_y);
-        r_y = (((float) t->box_xs[i]) - p_x);
-        t->box_xs[i] = p_x + r_x;
-        t->box_ys[i] = p_y + r_y;
-    }
-} 
-
 void setTetrominoBoxes(Tetromino* t) {
+    for (int i = 0; i < TETROMINO_SIZE; i++) {
+        t->box_xs[i] = 0;
+        t->box_ys[i] = 0;
+    }
     switch (t->tet_type) {
         case I:
             for (int i = 0; i < 4; i++) {
@@ -113,13 +91,71 @@ void setTetrominoBoxes(Tetromino* t) {
             t->box_ys[3] = 0;
         break;
         case NO_PIECE:
-            for (int i = 0; i < 4; i++) {
-                t->box_xs[i] = 0;
-                t->box_ys[i] = 0;
-            }
         break;
     }
 }
+
+void resetTetromino(Tetromino* t) {
+    t->tet_type = NO_PIECE;
+    t->bound_x = 0;
+    t->bound_y = 0;
+    t->colour = 0;
+    setTetrominoBoxes(t);
+}
+
+int getBoundSize(TetrominoType tt) {
+    switch (tt) {
+        case I: 
+            return 4;
+        case O: 
+            return 2;
+        case T:
+        case J:
+        case L:
+        case S:
+        case Z:
+            return 3;
+        case NO_PIECE:
+            return 0;
+    }
+}
+
+bool rotateTetromino(Grid* g, Tetromino* t) {
+    float p_x = ((float) getBoundSize(t->tet_type) - 1.0) / 2.0;
+    float p_y = p_x;
+    int r_xs[TETROMINO_SIZE], r_ys[TETROMINO_SIZE];
+    for (int i = 0; i < TETROMINO_SIZE; i++) {
+        r_xs[i] = p_x - (((float) t->box_ys[i]) - p_y);
+        r_ys[i] = p_y + (((float) t->box_xs[i]) - p_x);
+    }
+    
+    int n_x, n_y;
+    int c_x = 0, c_y = 0;
+    for (int i = 0; i < TETROMINO_SIZE; i++) {
+        n_x = t->bound_x + r_xs[i];
+        n_y = t->bound_y + r_ys[i];
+        while (n_y + c_y < 0) c_y++;
+        while (n_y + c_y >= GRID_HEIGHT) c_y--;
+        while (n_x + c_x < 0) c_x++;
+        while (n_x + c_x >= GRID_WIDTH) c_x--;
+    }
+    for (int i = 0; i < TETROMINO_SIZE; i++) {
+        n_x = t->bound_x + r_xs[i] + c_x;
+        n_y = t->bound_y + r_ys[i] + c_y;
+        if (n_y < 0) return false;
+        if (n_y >= GRID_HEIGHT) return false;
+        if (n_x < 0) return false;
+        if (n_x >= GRID_WIDTH) return false;
+
+        if (g->grid[n_y][n_x] != 0) return false;
+    }
+
+    for (int i = 0; i < TETROMINO_SIZE; i++) {
+        t->box_xs[i] = r_xs[i] + c_x;
+        t->box_ys[i] = r_ys[i] + c_y;
+    }
+    return true;
+} 
 
 void fillCurrentTetromino(Grid* grid) {
     if (grid->current.tet_type == NO_PIECE) {
@@ -127,7 +163,6 @@ void fillCurrentTetromino(Grid* grid) {
         grid->current.bound_x = (GRID_WIDTH - getBoundSize(grid->next)) >> 1;
         grid->current.bound_y = 3;
         grid->current.colour = (rand() % GRID_MAX) + 1;
-        grid->current.rotations = 0;
         setTetrominoBoxes(&grid->current);
         grid->next = NO_PIECE;
     }
@@ -137,23 +172,68 @@ void fillNextTetromino(Grid* grid) {
     if (grid->next == NO_PIECE) grid->next = (rand() % TETROMINO_COUNT) + 1;
 }
 
-bool pushTetromino(Tetromino* t) {
-    int bys[4];
-    for (int i = 0; i < 4; i++) {
-        bys[i] = t->box_ys[i] + 1;
+bool moveTetromino(Grid* g, Tetromino* t, int c_x, int c_y) {
+    int bi, bj;
+    for (int i = 0; i < TETROMINO_SIZE; i++) {
+        if (t->bound_y + t->box_ys[i] + c_y < 0) return false;
+        if (t->bound_y + t->box_ys[i] + c_y >= GRID_HEIGHT) return false;
+        if (t->bound_x + t->box_xs[i] + c_x < 0) return false;
+        if (t->bound_x + t->box_xs[i] + c_x >= GRID_WIDTH) return false;
+
+        bi = t->bound_y + t->box_ys[i] + c_y;
+        bj = t->bound_x + t->box_xs[i] + c_x;  
+        if (g->grid[bi][bj] != 0) return false;
     }
-    for (int i = 0; i < 4; i++) {
-        t->box_ys[i] = bys[i];
-    }
+    t->bound_y += c_y;
+    t->bound_x += c_x;
     return true;
+}
+
+void clearLine(Grid* g, int c_i) {
+    for (int i = c_i; i > 0; i--) {
+        for (int j = 0; j < GRID_WIDTH; j++) {
+            g->grid[i][j] = g->grid[i - 1][j];    
+        }      
+    }
+    g->redraw = true;
 }
 
 void updateGrid(Grid* grid) {
     grid->ticks = grid->ticks + 1;
+
     fillNextTetromino(grid);
     fillCurrentTetromino(grid);
     fillNextTetromino(grid);
-    if (grid->ticks % grid->speed == 0) grid->redraw |= pushTetromino(&grid->current);
+
+    if (grid->moveLeft ^ grid->moveRight &&
+            grid->ticks % LATERAL_DELAY == 0) {
+        int c_x = 1;
+        if (grid->moveLeft) c_x *= -1;
+        grid->redraw |= moveTetromino(grid, &grid->current, c_x, 0);
+    }
+
+    if (grid->ticks % grid->speed == 0 || grid->double_time) {
+        if (moveTetromino(grid, &grid->current, 0, 1)) {
+            grid->redraw = true;
+        } else {
+            int bi, bj;
+            for (int i = 0; i < 4; i++) {
+                bi = grid->current.bound_y + grid->current.box_ys[i];
+                bj = grid->current.bound_x + grid->current.box_xs[i];                
+                grid->grid[bi][bj] = grid->current.colour;
+            }
+            for (int i = GRID_HEIGHT - 1; i > -1; i--) {
+                for (int j = 0; j < GRID_WIDTH; j++) {
+                    if (grid->grid[i][j] == 0) break;
+                    if (j == GRID_WIDTH - 1) {
+                        clearLine(grid, i);
+                        i++;
+                    }
+                }
+            }
+            resetTetromino(&grid->current);
+        }
+    }
 }
 
 void drawTetromino(Tetromino* t, Display* d) {
@@ -188,6 +268,30 @@ void drawGrid(Grid* grid, Display* d) {
         }
     }
     drawTetromino(&grid->current, d);
+}
+
+void Grid_keyEvent(Grid* grid, SDL_KeyboardEvent e) {
+    switch (e.keysym.sym) {
+        case SDLK_LEFT:
+            if (e.type == SDL_KEYUP) grid->moveLeft = false; 
+            if (e.type == SDL_KEYDOWN) grid->moveLeft = true;
+        break;
+        case SDLK_RIGHT:
+            if (e.type == SDL_KEYUP) grid->moveRight = false; 
+            if (e.type == SDL_KEYDOWN) grid->moveRight = true;
+        break;
+        case SDLK_DOWN:
+            if (e.type == SDL_KEYUP) grid->double_time = false;
+            if (e.type == SDL_KEYDOWN) grid->double_time = true;
+        break;
+        case SDLK_UP:
+            if (e.type == SDL_KEYUP) grid->rotated = false;
+            if (e.type == SDL_KEYDOWN) {
+                grid->rotated = true;
+                grid->redraw |= rotateTetromino(grid, &grid->current);
+            }
+        break;
+    }
 }
 
 bool Grid_dropRedraw(Grid* g) {
