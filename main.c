@@ -73,9 +73,10 @@ void update() {
 // Draw components
 void draw() {
     // Draw the GSM
-    if (gsm != NULL) drawGSM(gsm);
-    // Update the window
-	SDL_RenderPresent(display->renderer);
+    if (gsm != NULL && drawGSM(gsm)) {
+        // Update the window
+	    SDL_RenderPresent(display->renderer);
+    }
 }
 
 // The main game loop

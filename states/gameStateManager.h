@@ -32,7 +32,7 @@ typedef struct GameStateManager_ {
 
 GSM* initialiseGSM(Display* d, StateType s);
 void updateGSM(GSM* gsm);
-void drawGSM(GSM* gsm);
+bool drawGSM(GSM* gsm);
 void GSM_mouseMotionEvent(GSM* gsm, SDL_MouseMotionEvent e);
 void GSM_mouseButtonEvent(GSM* gsm, SDL_MouseButtonEvent e);
 void GSM_keyEvent(GSM* gsm, SDL_KeyboardEvent e);

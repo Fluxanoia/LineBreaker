@@ -146,13 +146,11 @@ void updateGSM(GSM* gsm) {
     }
 }
 
-void drawGSM(GSM* gsm) {
-    if (gsm->redraw) {
-        gsm->redraw = false;
-        //SDL_RenderClear(gsm->display->renderer);
-    } else {
-        return;
-    }
+bool drawGSM(GSM* gsm) {
+    if (!gsm->redraw) return false;
+
+    gsm->redraw = false;
+    SDL_RenderClear(gsm->display->renderer);
     switch (gsm->currentState) {
         case LOADING:
             drawLoadingState(gsm->loadingState, gsm->display);
@@ -181,6 +179,7 @@ void drawGSM(GSM* gsm) {
         SDL_Rect bar = (SDL_Rect) { 0, 0, SCREEN_WIDTH, DRAG_BAR_HEIGHT };
         SDL_RenderFillRect(gsm->display->renderer, &bar);
     }
+    return true;
 }
 
 void GSM_mouseMotionEvent(GSM* gsm, SDL_MouseMotionEvent e) {
