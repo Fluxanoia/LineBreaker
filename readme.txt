@@ -1,0 +1,1 @@
+Required libraries: SDL2, SDL_ttf, SDL_image, math.h
