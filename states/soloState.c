@@ -8,7 +8,7 @@ SoloState* initialiseSoloState(Display* d) {
     SoloState* ss = malloc(sizeof(SoloState));
     ss->redraw = true;
     ss->nextState = NIL;
-    ss->grid = initialiseGrid(0, -SCREEN_HEIGHT, d);
+    ss->grid = initialiseGrid(GRID_INIT_X, GRID_INIT_Y, d);
     return ss;
 }
 
@@ -20,13 +20,20 @@ void wakeSoloState(SoloState* ss) {
 void sleepSoloState(SoloState* ss) {
     ss->nextState = NIL;
     sleepGrid(ss->grid);
+    setTweenValue(ss->grid->x, GRID_INIT_X);
+    setTweenValue(ss->grid->y, GRID_INIT_Y);
 }
 
 void updateSoloState(SoloState* ss) {
     updateGrid(ss->grid);
     ss->redraw |= Grid_dropRedraw(ss->grid);
     if (ss->grid->gameover) {
-        ss->nextState = MENU;
+        if (arrived(ss->grid->y) && ss->grid->y->id == 1) {
+            ss->nextState = MENU;
+        } else if (ss->grid->y->id == 0) {
+            ss->grid->y->id = 1;
+            moveTweenValue(ss->grid->y, EASE_OUT, -720, 60, 0);
+        }
     }
 }
 

@@ -11,6 +11,7 @@
 
 typedef struct ResourceManager_ {
     TTF_Font* base;
+    TTF_Font* small;
 
     SDL_Texture* board_back;
     SDL_Texture* boxes;
@@ -20,6 +21,7 @@ typedef struct ResourceManager_ {
 
     SDL_Texture* menu_cover;
 
+    SDL_Texture* title_small;
     SDL_Texture* title_line;
     SDL_Texture* title_breaker;
 

@@ -13,7 +13,7 @@ Button* initialiseButton(char* title, double x, double y, Display* d) {
             &(b->width), &(b->height));
     
     SDL_Color color = (SDL_Color) { 40, 40, 40, 255 };
-    SDL_Surface* surface = TTF_RenderText_Solid(d->resMan->base, title, color);
+    SDL_Surface* surface = TTF_RenderText_Solid(d->resMan->small, title, color);
     b->text = SDL_CreateTextureFromSurface(d->renderer, surface);
     SDL_FreeSurface(surface);
 

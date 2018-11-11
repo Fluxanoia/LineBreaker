@@ -12,6 +12,8 @@
 #define TETROMINO_SIZE  4
 #define TETROMINO_COUNT 7
 
+#define SHADOW_OPACITY  64
+
 #include              "tween.h"
 #include "../resourceManager.h"
 
@@ -23,8 +25,8 @@ typedef struct Tetromino_ {
     int bound_y;
     int colour;
 
-    int box_xs[4];
-    int box_ys[4];
+    int box_xs[TETROMINO_SIZE];
+    int box_ys[TETROMINO_SIZE];
 } Tetromino;
 
 typedef struct Grid_ {
@@ -51,6 +53,7 @@ typedef struct Grid_ {
 
     Tetromino current;
     TetrominoType next;
+    TweenValue* shadow;
 } Grid;
 
 Grid* initialiseGrid();

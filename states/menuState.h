@@ -13,7 +13,9 @@ typedef struct MenuState_ {
     bool redraw;
 
     int cover_w, cover_h;
+    int title_w, title_h;
     TweenValue* coverSlide;
+    TweenValue* titleSlide;
     
     ButtonManager* buttonManager;
 } MenuState;

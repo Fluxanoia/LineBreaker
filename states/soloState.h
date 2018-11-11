@@ -6,6 +6,9 @@
 #include       "../util/grid.h"
 #include "../resourceManager.h"
 
+#define GRID_INIT_X 0
+#define GRID_INIT_Y -720
+
 typedef struct SoloState_ {
     StateType nextState;
     bool redraw;

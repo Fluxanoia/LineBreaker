@@ -4,18 +4,20 @@
 #include          "menuState.h"
 #include "../resourceManager.h"
 
-#define SLIDE_OFF     -500
-#define SLIDE_ON      0
+#define SLIDE_OFF     -600
+#define SLIDE_ON      -100
 #define BUTTON_OFF_X  -450
 #define BUTTON_ON_X   22
+#define TITLE_OFF_X   -450
+#define TITLE_ON_X    22
 
-#define BUTTON_NAME_1 "Solo"
-#define BUTTON_NAME_2 "Race"
+#define BUTTON_NAME_1 "Singleplayer"
+#define BUTTON_NAME_2 "Multiplayer"
 #define BUTTON_NAME_3 "Quit"
 
-#define BUTTON_Y_1    200
-#define BUTTON_Y_2    350
-#define BUTTON_Y_3    500
+#define BUTTON_Y_1    325
+#define BUTTON_Y_2    425
+#define BUTTON_Y_3    525
  
 #define NO_BUTTONS    3
 
@@ -29,6 +31,10 @@ MenuState* initialiseMenuState(Display* d) {
             &(ms->cover_w), &(ms->cover_h));
     ms->coverSlide = initialiseTween(SLIDE_OFF);
 
+    SDL_QueryTexture(d->resMan->title_small, NULL, NULL,
+            &(ms->title_w), &(ms->title_h));
+    ms->titleSlide = initialiseTween(TITLE_OFF_X);
+
     char* ts[NO_BUTTONS] = { BUTTON_NAME_1, BUTTON_NAME_2, BUTTON_NAME_3 };
     int xs[] = {BUTTON_OFF_X, BUTTON_OFF_X, BUTTON_OFF_X};
     int ys[] = {BUTTON_Y_1, BUTTON_Y_2, BUTTON_Y_3};
@@ -40,6 +46,7 @@ MenuState* initialiseMenuState(Display* d) {
 
 void wakeMenuState(MenuState* ms) {
     moveTweenValue(ms->coverSlide, EASE_OUT, SLIDE_ON, 50, 10);
+    moveTweenValue(ms->titleSlide, EASE_OUT, TITLE_ON_X, 70, 45);
     for (int i = 0; i < ms->buttonManager->numberOf; i++) {
         moveTweenValue(ms->buttonManager->buttons[i]->x,
                 EASE_OUT, BUTTON_ON_X, 70, 55 + 10 * i);
@@ -50,6 +57,7 @@ void sleepMenuState(MenuState* ms) {
     ms->nextState = NIL;
     ms->coverSlide->id = 0;
     setTweenValue(ms->coverSlide, SLIDE_OFF);
+    setTweenValue(ms->titleSlide, TITLE_OFF_X);
     for (int i = 0; i < ms->buttonManager->numberOf; i++) {
         setTweenValue(ms->buttonManager->buttons[i]->x, BUTTON_OFF_X);
     }
@@ -58,10 +66,11 @@ void sleepMenuState(MenuState* ms) {
 void pushState(MenuState* ms, StateType st) {
     ms->pushState = st;
     ms->coverSlide->id = 1;
-    moveTweenValue(ms->coverSlide, EASE_OUT, SLIDE_OFF, 50, 45);
+    moveTweenValue(ms->coverSlide, EASE_OUT, SLIDE_OFF, 50, 55);
+    moveTweenValue(ms->titleSlide, EASE_OUT, TITLE_OFF_X, 70, 0);
     for (int i = 0; i < ms->buttonManager->numberOf; i++) {
         moveTweenValue(ms->buttonManager->buttons[i]->x,
-                EASE_OUT, BUTTON_OFF_X, 70, 10 * i);
+                EASE_OUT, BUTTON_OFF_X, 70, 10 * (i + 1));
     }
 }
 
@@ -83,6 +92,9 @@ void updateMenuState(MenuState* ms) {
     updateTweenValue(ms->coverSlide);
     ms->redraw |= TweenValue_dropRedraw(ms->coverSlide);
 
+    updateTweenValue(ms->titleSlide);
+    ms->redraw |= TweenValue_dropRedraw(ms->titleSlide);
+
     updateButtonManager(ms->buttonManager);
     ms->redraw |= ButtonManager_dropRedraw(ms->buttonManager);
     buttonEvent(ms, ButtonManager_dropClicked(ms->buttonManager));
@@ -95,10 +107,17 @@ void updateMenuState(MenuState* ms) {
 void drawMenuState(MenuState* ms, Display* display) {
     SDL_RenderCopy(display->renderer, display->resMan->background, NULL, NULL);
 
-    double cs = getTweenValue(ms->coverSlide);
-    SDL_Rect cover_rect = (SDL_Rect) { cs, 0, ms->cover_w, ms->cover_h };
+    double x;
+    SDL_Rect dstrect;
+
+    x = getTweenValue(ms->coverSlide);
+    dstrect = (SDL_Rect) { x, 0, ms->cover_w, ms->cover_h };
     SDL_RenderCopy(display->renderer, display->resMan->menu_cover,
-            NULL, &cover_rect);
+            NULL, &dstrect);
+
+    x = getTweenValue(ms->titleSlide);
+    dstrect = (SDL_Rect) { x, 10, ms->title_w, ms->title_h };
+    SDL_RenderCopy(display->renderer, display->resMan->title_small, NULL, &dstrect);
 
     drawButtonManager(ms->buttonManager, display);
 }

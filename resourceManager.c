@@ -24,10 +24,13 @@ SDL_Texture* loadBMPTexture(Display* d, char path[]) {
 ResourceManager* initialiseResourceManager(Display* d) {
     ResourceManager* rm = malloc(sizeof(ResourceManager));
     rm->base = P_(TTF_OpenFont("res/font/roboto.ttf", 72));
+    rm->small = P_(TTF_OpenFont("res/font/roboto.ttf", 36));
+
     rm->background = loadBMPTexture(d, "res/image/bg.bmp");
     
     rm->title_line = loadPNGTexture(d, "res/image/line.png");
     rm->title_breaker = loadPNGTexture(d, "res/image/breaker.png");
+    rm->title_small = loadPNGTexture(d, "res/image/title_small.png");
 
     rm->menu_cover = loadPNGTexture(d, "res/image/menucover.png");
 
