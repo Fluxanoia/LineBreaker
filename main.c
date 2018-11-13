@@ -8,14 +8,22 @@
 #include "states/gameStateManager.h"
 
 #define SDL_MAIN_HANDLED
+// Defines the game title
 #define GAME_TITLE         "Line Breaker"
+// Defines the games updates per second
 #define UPDATES_PER_SECOND 50
+// Calculates the time inbetween updates in milliseconds
 #define UPDATE_DELTA_TIME  (1000 / UPDATES_PER_SECOND)
 
+// A variable tracking whether the program should be running
 bool running = false;
+// A variable tracking whether the program should be printing
+// the amount of updates occuring in every second
 bool PRINT_APS = false;
 
+// A pointer holding the Display struct
 Display* display = NULL;
+// A pointer holding the GSM struct
 GSM* gsm = NULL;
 
 // Update components with a mouse motion
@@ -41,18 +49,22 @@ void pollEvents() {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         switch(e.type) {
+            // Quitting the game (on exit, ALT+F4, etc.)
             case SDL_QUIT:
                 running = false;
                 continue;
+            // When a key is pressed or released
             case SDL_KEYUP:
             case SDL_KEYDOWN:
                 keyEvent(e.key);
                 continue;
             break;
+            // When mouse motion occurs
             case SDL_MOUSEMOTION:
                 mouseMotionEvent(e.motion);
                 continue;
             break;
+            // When the mouse buttons are pressed
             case SDL_MOUSEBUTTONUP:
             case SDL_MOUSEBUTTONDOWN:
                 mouseButtonEvent(e.button);
@@ -97,10 +109,13 @@ void run() {
             draw();
             APS++;
         }
-        while (SDL_GetTicks() - lastSecond >= 1000) {
-            lastSecond += 1000;
-            if (PRINT_APS) printf("Actions in the last seconds : %d\n", APS);
-            APS = 0;
+        // Print out the actions per second if allowed
+        if (PRINT_APS) {
+            while (SDL_GetTicks() - lastSecond >= 1000) {
+                lastSecond += 1000;
+                printf("Actions in the last seconds : %d\n", APS);
+                APS = 0;
+            }
         }
     }
     printf("Main game loop exited.\n\n");
@@ -110,6 +125,7 @@ void run() {
 int main(int argc, char const *argv[]) {
     printf("\n%s, starting up...\n", GAME_TITLE);
     
+    // Read in the command line arguments
     StateType startingState = LOADING;
     for (int i = 1; i < argc; i++) {
         if (strncmp(argv[i], "-aps", 4) == 0) PRINT_APS = true;

@@ -8,21 +8,32 @@
 #include   "pauseState.h"
 #include "loadingState.h"
 
+// Defines the height of the drag bar at the top of the screen
 #define DRAG_BAR_HEIGHT 40
 
+// Defines the GameStateManager struct
 typedef struct GameStateManager_ {
+    // Whether to redraw or not
     bool redraw;
+    // Whether the game should be closed or not
     bool closed;
+    // The current, running state
     StateType currentState;
 
+    // The X and Y coordinates where dragging began
     int dragX;
     int dragY;
+    // The opacity of the drag bar
     int dragBarAlpha;
+    // Whether the mouse is on the drag bar
     bool hoverDragBar;
+    // Whether the mouse is dragging the drag bar
     bool dragging;
-
+    
+    // The game display
     Display* display;
 
+    // All the game states
     MenuState* menuState;
     LoadingState* loadingState;
     SoloState* soloState;

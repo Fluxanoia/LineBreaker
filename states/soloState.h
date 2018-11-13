@@ -6,13 +6,18 @@
 #include       "../util/grid.h"
 #include "../resourceManager.h"
 
+// Defines the grid's starting x and y values
 #define GRID_INIT_X 0
 #define GRID_INIT_Y -720
 
+// Defines the SoloState - a game state
 typedef struct SoloState_ {
+    // A value holding the state to be changed to
     StateType nextState;
+    // Whether the container should redraw or not
     bool redraw;
 
+    // The game grid to be played on
     Grid* grid;
 } SoloState;
 

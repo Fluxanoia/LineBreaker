@@ -4,17 +4,25 @@
 #include      "../util/tween.h"
 #include "../resourceManager.h"
 
-typedef struct LoadingState_ {
-    StateType nextState;
-    bool redraw;
-    
-    TweenValue* bgAlpha;
-    TweenValue* lineX;
-    TweenValue* breakerX;
+// Defines the height that the title is shown at
+#define TITLE_HEIGHT 220
 
+// Defines the LoadingState struct - a game state
+typedef struct LoadingState_ {
+    // A variable containing the state to be changed to
+    StateType nextState;
+    // A variable containing whether the container should redraw
+    bool redraw;
+    // TweenValues holding values of:
+    // Background opacity
+    TweenValue* bgAlpha;
+    // The 'LINE' X value
+    TweenValue* lineX;
+    // The 'BREAKER' Y value
+    TweenValue* breakerX;
+    // The width and height of the title pieces
     int lineX_width;
     int lineX_height;
-    
     int breakerX_width;
     int breakerX_height;
 } LoadingState;

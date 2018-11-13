@@ -7,6 +7,7 @@
 
 void wakeState(GSM* gsm);
 
+// Creates a GSM and returns its pointer
 GSM* initialiseGSM(Display* d, StateType s) {
     GSM* gsm = malloc(sizeof(GSM));
     gsm->currentState = s;
@@ -30,6 +31,7 @@ GSM* initialiseGSM(Display* d, StateType s) {
     return gsm;
 }
 
+// Wake the current state from sleep so it can be ran
 void wakeState(GSM* gsm) {
     switch (gsm->currentState) {
         case LOADING:
@@ -55,6 +57,7 @@ void wakeState(GSM* gsm) {
     }
 }
 
+// Sleep the current state so it can be stored
 void sleepState(GSM* gsm) {
     switch (gsm->currentState) {
         case LOADING:
@@ -80,6 +83,7 @@ void sleepState(GSM* gsm) {
     }
 }
 
+// Change the current game state
 void changeState(GSM* gsm, StateType st) {
     sleepState(gsm);
     if (st == CLOSE) {
@@ -90,7 +94,9 @@ void changeState(GSM* gsm, StateType st) {
     wakeState(gsm);
 }
 
+// Update the GSM
 void updateGSM(GSM* gsm) {
+    // Handle the drag bar
     if (gsm->hoverDragBar) {
         if (gsm->dragBarAlpha < 96) {
             gsm->dragBarAlpha = gsm->dragBarAlpha + 3;
@@ -102,6 +108,7 @@ void updateGSM(GSM* gsm) {
             gsm->redraw = true;
         }
     }
+    // Updates states
     switch (gsm->currentState) {
         case LOADING:
             updateLoadingState(gsm->loadingState);
@@ -146,6 +153,7 @@ void updateGSM(GSM* gsm) {
     }
 }
 
+// Draws the GSM
 bool drawGSM(GSM* gsm) {
     if (!gsm->redraw) return false;
 
@@ -182,6 +190,7 @@ bool drawGSM(GSM* gsm) {
     return true;
 }
 
+// Passes notification of mouse motion events to the current state
 void GSM_mouseMotionEvent(GSM* gsm, SDL_MouseMotionEvent e) {
     if (0 < e.y && e.y < DRAG_BAR_HEIGHT) {
         gsm->hoverDragBar = true;
@@ -220,6 +229,7 @@ void GSM_mouseMotionEvent(GSM* gsm, SDL_MouseMotionEvent e) {
     }
 }
 
+// Passes notification of mouse button events to the current state
 void GSM_mouseButtonEvent(GSM* gsm, SDL_MouseButtonEvent e) {
     if (e.type == SDL_MOUSEBUTTONUP && e.button == SDL_BUTTON_LEFT) {
             gsm->dragging = false;
@@ -255,6 +265,7 @@ void GSM_mouseButtonEvent(GSM* gsm, SDL_MouseButtonEvent e) {
     }
 }
 
+// Passes notification of key events to the current state
 void GSM_keyEvent(GSM* gsm, SDL_KeyboardEvent e) {
     switch (gsm->currentState) {
         case LOADING:
@@ -280,6 +291,7 @@ void GSM_keyEvent(GSM* gsm, SDL_KeyboardEvent e) {
     }
 }
 
+// Frees the GSM
 void freeGSM(GSM* gsm) {
     freeLoadingState(gsm->loadingState);
     freeMenuState(gsm->menuState);

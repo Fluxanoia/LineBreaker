@@ -3,14 +3,19 @@
 
 #include "button.h"
 
+// Defines the maximum amount of buttons in a single
+// ButtonManager
 #define MAX_BUTTONS 4
 
+// Defines the ButtonManager struct that manages buttons
 typedef struct ButtonManager_ {
+    // Whether the container should redraw
     bool redraw;
-
+    // The button that has been clicked, -1 if none
     int clicked;
-
+    // The number of buttons created
     int numberOf;
+    // The list of buttons
     Button* buttons[MAX_BUTTONS];
 } ButtonManager;
 

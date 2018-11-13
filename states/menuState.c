@@ -4,37 +4,45 @@
 #include          "menuState.h"
 #include "../resourceManager.h"
 
+// The position of the menu cover ON and OFF screen
 #define SLIDE_OFF     -600
 #define SLIDE_ON      -100
+// The position of the buttons ON and OFF screen
 #define BUTTON_OFF_X  -450
 #define BUTTON_ON_X   22
+// The position of the title ON and OFF screen
 #define TITLE_OFF_X   -450
 #define TITLE_ON_X    22
 
+// The button names
 #define BUTTON_NAME_1 "Singleplayer"
 #define BUTTON_NAME_2 "Multiplayer"
 #define BUTTON_NAME_3 "Quit"
 
+// The button Y values
 #define BUTTON_Y_1    325
 #define BUTTON_Y_2    425
 #define BUTTON_Y_3    525
  
+// The number of buttons
 #define NO_BUTTONS    3
 
+// Creates a MenuState and returns its pointer
 MenuState* initialiseMenuState(Display* d) {
     MenuState* ms = malloc(sizeof(MenuState));
     ms->redraw = true;
     ms->nextState = NIL;
     ms->pushState = NIL;
 
+    // Get the menu cover dimensions
     SDL_QueryTexture(d->resMan->menu_cover, NULL, NULL,
             &(ms->cover_w), &(ms->cover_h));
     ms->coverSlide = initialiseTween(SLIDE_OFF);
-
+    // Get the title dimensions
     SDL_QueryTexture(d->resMan->title_small, NULL, NULL,
             &(ms->title_w), &(ms->title_h));
     ms->titleSlide = initialiseTween(TITLE_OFF_X);
-
+    // Initialise the BUttonManager
     char* ts[NO_BUTTONS] = { BUTTON_NAME_1, BUTTON_NAME_2, BUTTON_NAME_3 };
     int xs[] = {BUTTON_OFF_X, BUTTON_OFF_X, BUTTON_OFF_X};
     int ys[] = {BUTTON_Y_1, BUTTON_Y_2, BUTTON_Y_3};
@@ -43,7 +51,7 @@ MenuState* initialiseMenuState(Display* d) {
     return ms;
 }
 
-
+// Wake the MenuState from sleep
 void wakeMenuState(MenuState* ms) {
     moveTweenValue(ms->coverSlide, EASE_OUT, SLIDE_ON, 50, 10);
     moveTweenValue(ms->titleSlide, EASE_OUT, TITLE_ON_X, 70, 45);
@@ -53,6 +61,7 @@ void wakeMenuState(MenuState* ms) {
     }
 }  
 
+// Sleep the MenuState so it can be stored
 void sleepMenuState(MenuState* ms) {
     ms->nextState = NIL;
     ms->coverSlide->id = 0;
@@ -63,6 +72,7 @@ void sleepMenuState(MenuState* ms) {
     }
 }
 
+// Starts closing the state so it can transition smoothly to other states
 void pushState(MenuState* ms, StateType st) {
     ms->pushState = st;
     ms->coverSlide->id = 1;
@@ -74,7 +84,9 @@ void pushState(MenuState* ms, StateType st) {
     }
 }
 
+// Sifts through the possible button presses and acts accordingly
 void buttonEvent(MenuState* ms, int i) {
+    if (ms->coverSlide->id == 1) return;
     switch (i) {
         case 0:
             pushState(ms, SINGLEPLAYER);
@@ -88,6 +100,7 @@ void buttonEvent(MenuState* ms, int i) {
     }
 }
 
+// Updates the MenuState
 void updateMenuState(MenuState* ms) {
     updateTweenValue(ms->coverSlide);
     ms->redraw |= TweenValue_dropRedraw(ms->coverSlide);
@@ -104,6 +117,7 @@ void updateMenuState(MenuState* ms) {
     }
 }
 
+// Draws the MenuState
 void drawMenuState(MenuState* ms, Display* display) {
     SDL_RenderCopy(display->renderer, display->resMan->background, NULL, NULL);
 
@@ -122,18 +136,21 @@ void drawMenuState(MenuState* ms, Display* display) {
     drawButtonManager(ms->buttonManager, display);
 }
 
+// Notifies the SoloState of mouse motion
 void MenuState_mouseMotionEvent(MenuState* ms, SDL_MouseMotionEvent e) {
     ButtonManager_mouseMotionEvent(ms->buttonManager, e);
 }
 
+// Notifies the SoloState of mouse button presses
 void MenuState_mouseButtonEvent(MenuState* ms, SDL_MouseButtonEvent e) {
     ButtonManager_mouseButtonEvent(ms->buttonManager, e);
 }
 
+// Notifies the SoloState of key presses
 void MenuState_keyEvent(MenuState* ms, SDL_KeyboardEvent e) {
-
 }
 
+// Returns the redraw value and sets it to false
 bool MenuState_dropRedraw(MenuState* ms) {
     if (ms->redraw) {
         ms->redraw = false;
@@ -142,6 +159,7 @@ bool MenuState_dropRedraw(MenuState* ms) {
     return false;
 }
 
+// Frees the MenuState
 void freeMenuState(MenuState* ms) {
     freeTweenValue(ms->coverSlide);
     freeButtonManager(ms->buttonManager);

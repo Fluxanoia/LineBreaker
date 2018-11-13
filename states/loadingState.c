@@ -4,8 +4,7 @@
 #include       "loadingState.h"
 #include "../resourceManager.h"
 
-#define TITLE_HEIGHT 220
-
+// Initialises the LoadingState and returns its pointer
 LoadingState* initialiseLoadingState(Display* d) {
     LoadingState* ls = malloc(sizeof(LoadingState));
     ls->redraw = true;
@@ -23,6 +22,7 @@ LoadingState* initialiseLoadingState(Display* d) {
     return ls;
 }
 
+// Wakes the LoadingState from sleep
 void wakeLoadingState(LoadingState* ls) {
     moveTweenValue(ls->bgAlpha, EASE_OUT, 255, 100, 10);
     moveTweenValue(ls->lineX, ELASTIC,
@@ -31,6 +31,7 @@ void wakeLoadingState(LoadingState* ls) {
             (SCREEN_WIDTH - ls->breakerX_width) / 2, 60, 130);
 }
 
+// Sleeps the LoadingState so it can be stored
 void sleepLoadingState(LoadingState* ls) {
     ls->nextState = NIL;
     setTweenValue(ls->bgAlpha, 0);
@@ -38,6 +39,7 @@ void sleepLoadingState(LoadingState* ls) {
     setTweenValue(ls->breakerX, SCREEN_WIDTH + 10);
 }
 
+// Updates the LoadingState
 void updateLoadingState(LoadingState* ls) {
     updateTweenValue(ls->bgAlpha);
     ls->redraw |= TweenValue_dropRedraw(ls->bgAlpha);
@@ -62,6 +64,7 @@ void updateLoadingState(LoadingState* ls) {
     }
 }
 
+// Draws the LoadingState
 void drawLoadingState(LoadingState* load, Display* display) {
     SDL_SetTextureAlphaMod(display->resMan->background,
             (Uint8) getTweenValue(load->bgAlpha));
@@ -80,18 +83,20 @@ void drawLoadingState(LoadingState* load, Display* display) {
             NULL, &break_rect);
 }
 
+// Notifies the LoadingState of mouse and key events
 void LoadingState_mouseMotionEvent(LoadingState* ls, SDL_MouseMotionEvent e) {
-
 }
-
 void LoadingState_mouseButtonEvent(LoadingState* ls, SDL_MouseButtonEvent e) {
-
 }
-
 void LoadingState_keyEvent(LoadingState* ls, SDL_KeyboardEvent e) {
-
+    switch (e.keysym.sym) {
+        case SDLK_RETURN:
+            ls->nextState = MENU;
+        break;
+    }
 }
 
+// Returns the redraw value and sets it to false
 bool LoadingState_dropRedraw(LoadingState* ls) {
     if (ls->redraw) {
         ls->redraw = false;
@@ -100,6 +105,7 @@ bool LoadingState_dropRedraw(LoadingState* ls) {
     return false;
 }
 
+// Frees the LoadingState
 void freeLoadingState(LoadingState* ls) {
     freeTweenValue(ls->bgAlpha);
     freeTweenValue(ls->lineX);
