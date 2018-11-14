@@ -9,7 +9,14 @@ SoloState* initialiseSoloState(Display* d) {
     SoloState* ss = malloc(sizeof(SoloState));
     ss->redraw = true;
     ss->nextState = NIL;
-    ss->grid = initialiseGrid(GRID_INIT_X, GRID_INIT_Y, d);
+
+    GridKeyboardLayout gkl;
+    gkl.LEFT         = SDLK_LEFT;
+    gkl.RIGHT        = SDLK_RIGHT;
+    gkl.ROTATE       = SDLK_UP;
+    gkl.FAST_DROP    = SDLK_DOWN;
+    gkl.INSTANT_DROP = SDLK_SPACE;
+    ss->grid = initialiseGrid(GRID_INIT_X, GRID_INIT_Y, gkl, d);
     return ss;
 }
 
