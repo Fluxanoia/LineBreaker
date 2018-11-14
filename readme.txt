@@ -20,3 +20,4 @@ Required libraries: SDL2, SDL_ttf, SDL_image, math.h
 Important points:
     -redrawing
     -testing
+    -resource usage
