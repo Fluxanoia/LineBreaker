@@ -16,6 +16,7 @@ SoloState* initialiseSoloState(Display* d) {
     gkl.ROTATE       = SDLK_UP;
     gkl.FAST_DROP    = SDLK_DOWN;
     gkl.INSTANT_DROP = SDLK_SPACE;
+    gkl.SWITCH_HELD  = SDLK_RETURN;
     ss->grid = initialiseGrid(GRID_INIT_X, GRID_INIT_Y, gkl, d);
     return ss;
 }

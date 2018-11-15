@@ -3,11 +3,25 @@
 
 #include            <stdbool.h>
 #include             "states.h"
+#include       "../util/grid.h"
 #include "../resourceManager.h"
 
+// Defines the grids' starting x and y values
+#define LEFT_GRID_INIT_X 690
+#define LEFT_GRID_INIT_Y -720
+#define RIGHT_GRID_INIT_X 50
+#define RIGHT_GRID_INIT_Y -720
+
+// Defines the SoloState - a game state
 typedef struct RaceState_ {
+    // A value holding the state to be changed to
     StateType nextState;
+    // Whether the container should redraw or not
     bool redraw;
+
+    // The game grid to be played on
+    Grid* gridLeft;
+    Grid* gridRight;
 } RaceState;
 
 RaceState* initialiseRaceState(Display* d);

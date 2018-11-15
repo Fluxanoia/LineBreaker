@@ -8,12 +8,20 @@ Command line arguments:
 -l   : skips the loading screen
 
 Controls:
-    Left arrow key  - move piece left
-    Right arrow key - move piece right
-    Up arrow key    - rotate piece
-    Down arrow key  - fast-falling
-    Space bar       - instant drop
-    Enter           - hold piece
+    Singleplayer or player one:
+        Left arrow key  - move piece left
+        Right arrow key - move piece right
+        Up arrow key    - rotate piece
+        Down arrow key  - fast-falling
+        Space bar       - instant drop
+        Enter           - hold piece
+    Player two:
+        A               - move piece left
+        D               - move piece right
+        W               - rotate piece
+        S               - fast-falling
+        E               - instant drop
+        R               - hold piece
 
 Required libraries: SDL2, SDL_ttf, SDL_image, math.h
 

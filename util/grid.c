@@ -648,7 +648,7 @@ void Grid_keyEvent(Grid* g, SDL_KeyboardEvent e) {
         if (e.type == SDL_KEYDOWN) g->double_time = true;
     }
     // Rotate
-    if (e.keysym.sym == SDLK_UP) {
+    if (e.keysym.sym == g->gkl.ROTATE) {
         if (e.type == SDL_KEYUP) g->rotated = false;
         if (e.type == SDL_KEYDOWN && !g->rotated) {
             g->rotated = true;
@@ -656,7 +656,7 @@ void Grid_keyEvent(Grid* g, SDL_KeyboardEvent e) {
         }
     }
     // Instant drop
-    if (e.keysym.sym == SDLK_SPACE) {
+    if (e.keysym.sym == g->gkl.INSTANT_DROP) {
         if (e.type == SDL_KEYUP) g->fastDropped = false;
         if (e.type == SDL_KEYDOWN && !g->fastDropped) {
             int fallen = 0;
@@ -670,7 +670,7 @@ void Grid_keyEvent(Grid* g, SDL_KeyboardEvent e) {
         }
     }
     // Hold the current piece
-    if (e.keysym.sym == SDLK_RETURN) {
+    if (e.keysym.sym == g->gkl.SWITCH_HELD) {
         if (!g->switchedHeld) {
             g->switchedHeld = true;
             TetrominoType tempt = g->held;
