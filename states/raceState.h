@@ -7,9 +7,9 @@
 #include "../resourceManager.h"
 
 // Defines the grids' starting x and y values
-#define LEFT_GRID_INIT_X 690
+#define LEFT_GRID_INIT_X 50
 #define LEFT_GRID_INIT_Y -720
-#define RIGHT_GRID_INIT_X 50
+#define RIGHT_GRID_INIT_X 690
 #define RIGHT_GRID_INIT_Y -720
 
 // Defines the SoloState - a game state

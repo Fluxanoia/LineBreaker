@@ -15,7 +15,7 @@ SoloState* initialiseSoloState(Display* d) {
     gkl.RIGHT        = SDLK_RIGHT;
     gkl.ROTATE       = SDLK_UP;
     gkl.FAST_DROP    = SDLK_DOWN;
-    gkl.INSTANT_DROP = SDLK_SPACE;
+    gkl.INSTANT_DROP = SDLK_PERIOD;
     gkl.SWITCH_HELD  = SDLK_RETURN;
     ss->grid = initialiseGrid(GRID_INIT_X, GRID_INIT_Y, gkl, d);
     return ss;
@@ -31,8 +31,7 @@ void wakeSoloState(SoloState* ss) {
 void sleepSoloState(SoloState* ss) {
     ss->nextState = NIL;
     sleepGrid(ss->grid);
-    setTweenValue(ss->grid->x, GRID_INIT_X);
-    setTweenValue(ss->grid->y, GRID_INIT_Y);
+    setGridPosition(ss->grid, GRID_INIT_X, GRID_INIT_Y);
 }
 
 // Updates the SoloState

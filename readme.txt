@@ -13,15 +13,15 @@ Controls:
         Right arrow key - move piece right
         Up arrow key    - rotate piece
         Down arrow key  - fast-falling
-        Space bar       - instant drop
+        Full stop       - instant drop
         Enter           - hold piece
     Player two:
         A               - move piece left
         D               - move piece right
         W               - rotate piece
         S               - fast-falling
-        E               - instant drop
-        R               - hold piece
+        Space bar       - instant drop
+        E               - hold piece
 
 Required libraries: SDL2, SDL_ttf, SDL_image, math.h
 

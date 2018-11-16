@@ -27,16 +27,9 @@ Grid* initialiseGrid(int x, int y, GridKeyboardLayout gkl, Display* d) {
     // Initialise the tween values
     g->shadow = initialiseTween(0);
     g->tabSlide = initialiseTween(0);
-    if (x == GRID_CENTER) {
-        g->x = initialiseTween((SCREEN_WIDTH - g->boardBackWidth) / 2);
-    } else {
-        g->x = initialiseTween(x);
-    }
-    if (y == GRID_CENTER) {
-        g->y = initialiseTween((SCREEN_HEIGHT - g->boardBackHeight) / 2);
-    } else {
-        g->y = initialiseTween(y);
-    } 
+    g->x = initialiseTween(0);
+    g->y = initialiseTween(0);
+    setGridPosition(g, x, y);
 
     // Initialise all the particles
     for (int i = 0; i < GRID_HEIGHT; i++) for (int j = 0; j < GRID_WIDTH; j++) {
@@ -681,6 +674,20 @@ void Grid_keyEvent(Grid* g, SDL_KeyboardEvent e) {
             g->redraw = true;
         }
     }
+}
+
+// Sets the grid's position
+void setGridPosition(Grid* g, int x, int y) {
+    if (x == GRID_CENTER) {
+        setTweenValue(g->x, (SCREEN_WIDTH - g->boardBackWidth) / 2);
+    } else {
+        setTweenValue(g->x, x);
+    }
+    if (y == GRID_CENTER) {
+        setTweenValue(g->y, (SCREEN_HEIGHT - g->boardBackHeight) / 2);
+    } else {
+        setTweenValue(g->y, y);
+    } 
 }
 
 // Return the redraw value and set it to false

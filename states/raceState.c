@@ -15,8 +15,8 @@ RaceState* initialiseRaceState(Display* d) {
     gkl_left.RIGHT        = SDLK_d;
     gkl_left.ROTATE       = SDLK_w;
     gkl_left.FAST_DROP    = SDLK_s;
-    gkl_left.INSTANT_DROP = SDLK_e;
-    gkl_left.SWITCH_HELD  = SDLK_r;
+    gkl_left.INSTANT_DROP = SDLK_SPACE;
+    gkl_left.SWITCH_HELD  = SDLK_e;
     rs->gridLeft = initialiseGrid(LEFT_GRID_INIT_X, 
             LEFT_GRID_INIT_Y, gkl_left, d);
     
@@ -25,7 +25,7 @@ RaceState* initialiseRaceState(Display* d) {
     gkl_right.RIGHT        = SDLK_RIGHT;
     gkl_right.ROTATE       = SDLK_UP;
     gkl_right.FAST_DROP    = SDLK_DOWN;
-    gkl_right.INSTANT_DROP = SDLK_SPACE;
+    gkl_right.INSTANT_DROP = SDLK_PERIOD;
     gkl_left.SWITCH_HELD   = SDLK_RETURN;
     rs->gridRight = initialiseGrid(RIGHT_GRID_INIT_X, 
             RIGHT_GRID_INIT_Y, gkl_right, d);
@@ -45,10 +45,8 @@ void sleepRaceState(RaceState* rs) {
     rs->nextState = NIL;
     sleepGrid(rs->gridLeft);
     sleepGrid(rs->gridRight);
-    setTweenValue(rs->gridLeft->x, LEFT_GRID_INIT_X);
-    setTweenValue(rs->gridLeft->y, LEFT_GRID_INIT_Y);
-    setTweenValue(rs->gridRight->x, RIGHT_GRID_INIT_X);
-    setTweenValue(rs->gridRight->y, RIGHT_GRID_INIT_Y);
+    setGridPosition(rs->gridLeft, LEFT_GRID_INIT_X, LEFT_GRID_INIT_Y);
+    setGridPosition(rs->gridRight, RIGHT_GRID_INIT_X, RIGHT_GRID_INIT_Y);
 }
 
 // Updates the RaceState

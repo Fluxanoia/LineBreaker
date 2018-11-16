@@ -153,6 +153,7 @@ void sleepGrid(Grid* grid);
 void updateGrid(Grid* grid);
 void drawGrid(Grid* grid, Display* d);
 void Grid_keyEvent(Grid* grid, SDL_KeyboardEvent e);
+void setGridPosition(Grid* g, int x, int y);
 bool Grid_dropRedraw(Grid* grid);
 void freeGrid(Grid* grid);
 
