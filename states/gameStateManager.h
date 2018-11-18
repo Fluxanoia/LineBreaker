@@ -19,6 +19,8 @@ typedef struct GameStateManager_ {
     bool closed;
     // The current, running state
     StateType currentState;
+    // The state running prior to the current
+    StateType lastState;
 
     // The X and Y coordinates where dragging began
     int dragX;
@@ -47,6 +49,7 @@ bool drawGSM(GSM* gsm);
 void GSM_mouseMotionEvent(GSM* gsm, SDL_MouseMotionEvent e);
 void GSM_mouseButtonEvent(GSM* gsm, SDL_MouseButtonEvent e);
 void GSM_keyEvent(GSM* gsm, SDL_KeyboardEvent e);
+void GSM_runTests(GSM* gsm);
 void freeGSM(GSM* gsm);
 
 #endif

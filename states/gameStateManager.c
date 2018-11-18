@@ -6,11 +6,14 @@
 #include "../resourceManager.h"
 
 void wakeState(GSM* gsm);
+void changeState(GSM* gsm, StateType st);
 
 // Creates a GSM and returns its pointer
 GSM* initialiseGSM(Display* d, StateType s) {
     GSM* gsm = malloc(sizeof(GSM));
-    gsm->currentState = s;
+    gsm->currentState = NIL;
+    gsm->lastState = NIL;
+
     gsm->redraw = true;
     gsm->closed = false;
 
@@ -27,7 +30,7 @@ GSM* initialiseGSM(Display* d, StateType s) {
     gsm->soloState = initialiseSoloState(d);
     gsm->raceState = initialiseRaceState(d);
     gsm->pauseState = initialisePauseState(d);
-    wakeState(gsm);
+    changeState(gsm, s);
     return gsm;
 }
 
@@ -51,7 +54,8 @@ void wakeState(GSM* gsm) {
         break;
         case NIL:
         case CLOSE:
-            fprintf(stderr, "State set to NIL\n");
+        case LAST_STATE:
+            fprintf(stderr, "State set to something that cannot be parsed.\n");
             fail();
         break;
     }
@@ -77,7 +81,8 @@ void sleepState(GSM* gsm) {
         break;
         case NIL:
         case CLOSE:
-            fprintf(stderr, "State set to NIL\n");
+        case LAST_STATE:
+            fprintf(stderr, "State set to something that cannot be parsed.\n");
             fail();
         break;
     }
@@ -85,12 +90,19 @@ void sleepState(GSM* gsm) {
 
 // Change the current game state
 void changeState(GSM* gsm, StateType st) {
-    sleepState(gsm);
+    if (gsm->currentState != NIL) sleepState(gsm);
     if (st == CLOSE) {
         gsm->closed = true;
         return;
     }
-    gsm->currentState = st;
+    if (st == LAST_STATE) {
+        StateType curr = gsm->currentState;
+        gsm->currentState = gsm->lastState;
+        gsm->lastState = curr;
+    } else {
+        gsm->lastState = gsm->currentState;
+        gsm->currentState = st;
+    }
     wakeState(gsm);
 }
 
@@ -144,10 +156,12 @@ void updateGSM(GSM* gsm) {
             if (gsm->pauseState->nextState != NIL) {
                 changeState(gsm, gsm->pauseState->nextState);
             }
+        break;            
         break;
         case NIL:
         case CLOSE:
-            fprintf(stderr, "State set to NIL\n");
+        case LAST_STATE:
+            fprintf(stderr, "State set to something that cannot be parsed.\n");
             fail();
         break;
     }
@@ -177,7 +191,8 @@ bool drawGSM(GSM* gsm) {
         break;
         case NIL:
         case CLOSE:
-            fprintf(stderr, "State set to NIL\n");
+        case LAST_STATE:
+            fprintf(stderr, "State set to something that cannot be parsed.\n");
             fail();
         break;
     }
@@ -223,7 +238,8 @@ void GSM_mouseMotionEvent(GSM* gsm, SDL_MouseMotionEvent e) {
         break;
         case NIL:
         case CLOSE:
-            fprintf(stderr, "State set to NIL\n");
+        case LAST_STATE:
+            fprintf(stderr, "State set to something that cannot be parsed.\n");
             fail();
         break;
     }
@@ -259,7 +275,8 @@ void GSM_mouseButtonEvent(GSM* gsm, SDL_MouseButtonEvent e) {
         break;
         case NIL:
         case CLOSE:
-            fprintf(stderr, "State set to NIL\n");
+        case LAST_STATE:    
+            fprintf(stderr, "State set to something that cannot be parsed.\n");
             fail();
         break;
     }
@@ -285,10 +302,20 @@ void GSM_keyEvent(GSM* gsm, SDL_KeyboardEvent e) {
         break;
         case NIL:
         case CLOSE:
-            fprintf(stderr, "State set to NIL\n");
+        case LAST_STATE:
+            fprintf(stderr, "State set to something that cannot be parsed.\n");
             fail();
         break;
     }
+}
+
+// Runs some tests
+void GSM_runTests(GSM* gsm) {
+    LoadingState_runTests(gsm->loadingState);
+    MenuState_runTests(gsm->menuState);
+    SoloState_runTests(gsm->soloState);
+    RaceState_runTests(gsm->raceState);
+    PauseState_runTests(gsm->pauseState);
 }
 
 // Frees the GSM

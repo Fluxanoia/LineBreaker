@@ -20,6 +20,7 @@ typedef struct ResourceManager_ {
     SDL_Color* button_colour;
     SDL_Color* text_colour;
 
+    SDL_Texture* score_card;
     SDL_Texture* board_tab;
     SDL_Texture* board_back;
     SDL_Texture* boxes;
@@ -44,6 +45,8 @@ typedef struct Display_ {
     SDL_Renderer* renderer;
     
     ResourceManager* resMan;
+
+    SDL_Texture* lastPresent;
 } Display;
 
 SDL_Texture* createSmallText(char title[], int* w, int* h, SDL_Color c, Display* d);

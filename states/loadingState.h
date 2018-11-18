@@ -36,6 +36,7 @@ void LoadingState_mouseMotionEvent(LoadingState* ls, SDL_MouseMotionEvent e);
 void LoadingState_mouseButtonEvent(LoadingState* ls, SDL_MouseButtonEvent e);
 void LoadingState_keyEvent(LoadingState* ls, SDL_KeyboardEvent e);
 bool LoadingState_dropRedraw(LoadingState* ls);
+void LoadingState_runTests(LoadingState* ls);
 void freeLoadingState(LoadingState* ls);
 
 #endif

@@ -1,6 +1,7 @@
-#include  <stdlib.h>
-#include <stdbool.h>
-#include    "grid.h"
+#include      <stdlib.h>
+#include      <assert.h>
+#include     <stdbool.h>
+#include        "grid.h"
 
 // Initialise the Grid and return its pointer
 Grid* initialiseGrid(int x, int y, GridKeyboardLayout gkl, Display* d) {
@@ -23,6 +24,7 @@ Grid* initialiseGrid(int x, int y, GridKeyboardLayout gkl, Display* d) {
             &g->boardBackWidth, &g->boardBackHeight);
     SDL_QueryTexture(d->resMan->board_tab, NULL, NULL,
             &g->tabWidth, &g->tabHeight);
+    g->score_tex = NULL;
 
     // Initialise the tween values
     g->shadow = initialiseTween(0);
@@ -55,10 +57,17 @@ int getGridBoxY(Grid* g, int i) {
 
 // Returns the string length required to contain an int
 int reqStrLenFor(int i) {
-    if (i == 0) return 2;
-    int count = floor(log10(i)) + 1;
-    // For negative sign
-    if (i < 0) count++;
+    int count = 0;
+    if (i < 0) {
+        // For negative sign
+        count++;
+        i *= -1;
+    }
+    if (abs(i) < 10) {
+        count++;
+    } else {
+        count += floor(log10(i)) + 1;
+    }
     // For null terminator
     count++;
     return count;
@@ -562,7 +571,8 @@ void drawGrid(Grid* g, Display* d) {
             *d->resMan->text_colour, d);
     if (dstrect.w > TAB_MAX - 10) dstrect.w = TAB_MAX - 10;
     SDL_RenderCopy(d->renderer, score, NULL, &dstrect);
-    SDL_DestroyTexture(score);
+    SDL_DestroyTexture(g->score_tex);
+    g->score_tex = score;
     // Draw the next title
     dstrect.y += 5 + dstrect.h;
     dstrect.w = g->nextTitleWidth;
@@ -690,6 +700,16 @@ void setGridPosition(Grid* g, int x, int y) {
     } 
 }
 
+// Prepares the grid for pausing
+void Grid_pause(Grid* g) {
+    g->moveLeft = false;
+    g->moveRight = false;
+    g->rotated = false;
+    g->fastDropped = false;
+    g->double_time = false;
+    g->movePause = 0;
+}
+
 // Return the redraw value and set it to false
 bool Grid_dropRedraw(Grid* g) {
     if (g->redraw) {
@@ -708,8 +728,144 @@ void freeGrid(Grid* g) {
     SDL_DestroyTexture(g->score_title);
     SDL_DestroyTexture(g->next_title);
     SDL_DestroyTexture(g->held_title);
+    if (g->score_tex != NULL) SDL_DestroyTexture(g->score_tex);
     for (int i = 0; i < GRID_HEIGHT; i++) for (int j = 0; j < GRID_WIDTH; j++) {
         freeParticles(g->particles[i][j]);
     }
     free(g);
+}
+
+// ==================================================================
+// === TEST FUNCTIONS ===============================================
+// ==================================================================
+
+void testReqStrLenFor() {
+    assert(reqStrLenFor(-234) == 5);
+    assert(reqStrLenFor(23224) == 6);
+    assert(reqStrLenFor(-2937) == 6);
+    assert(reqStrLenFor(99999) == 6);
+    assert(reqStrLenFor(9) == 2);
+    assert(reqStrLenFor(0) == 2);
+    assert(reqStrLenFor(-6) == 3);
+}
+
+void testTetrominoFunctions(Grid* g) {
+    Tetromino t_empty;
+    Tetromino t_l;
+    Tetromino t_o;
+    Tetromino t_s;
+
+    // Fill tetrominos
+
+    forceFillTetromino(&t_empty, NO_PIECE, 0);
+    forceFillTetromino(&t_l, L, 0);
+    forceFillTetromino(&t_o, O, 0);
+    forceFillTetromino(&t_s, S, 0);
+
+    // Test bound size
+
+    assert(getBoundSize(t_empty.tet_type) == 1);
+    assert(getBoundSize(t_l.tet_type) == 3);
+    assert(getBoundSize(t_o.tet_type) == 2);
+    assert(getBoundSize(t_s.tet_type) == 3);
+
+    // Test piece boxes
+
+    for (int i = 0; i < TETROMINO_SIZE; i++) {
+        assert(t_empty.box_xs[i] == 0);
+        assert(t_empty.box_ys[i] == 0);
+    }
+
+    assert(t_l.box_xs[0] == 0);
+    assert(t_l.box_xs[1] == 1);
+    assert(t_l.box_xs[2] == 2);
+    assert(t_l.box_xs[3] == 2);
+    assert(t_l.box_ys[0] == 1);
+    assert(t_l.box_ys[1] == 1);
+    assert(t_l.box_ys[2] == 1);
+    assert(t_l.box_ys[3] == 0);
+
+    assert(t_o.box_xs[0] == 0);
+    assert(t_o.box_xs[1] == 1);
+    assert(t_o.box_xs[2] == 0);
+    assert(t_o.box_xs[3] == 1);
+    assert(t_o.box_ys[0] == 0);
+    assert(t_o.box_ys[1] == 1);
+    assert(t_o.box_ys[2] == 1);
+    assert(t_o.box_ys[3] == 0);
+
+    assert(t_s.box_xs[0] == 1);
+    assert(t_s.box_xs[1] == 1);
+    assert(t_s.box_xs[2] == 0);
+    assert(t_s.box_xs[3] == 2);
+    assert(t_s.box_ys[0] == 0);
+    assert(t_s.box_ys[1] == 1);
+    assert(t_s.box_ys[2] == 1);
+    assert(t_s.box_ys[3] == 0);
+
+    // Test rotation
+
+    moveTetromino(g, &t_empty, 0, 4);
+    moveTetromino(g, &t_l, 0, 4);
+    moveTetromino(g, &t_o, 0, 4);
+    moveTetromino(g, &t_s, 0, 4);
+    rotateTetromino(g, &t_empty);
+    rotateTetromino(g, &t_l);
+    rotateTetromino(g, &t_o);
+    rotateTetromino(g, &t_s);
+
+    for (int i = 0; i < TETROMINO_SIZE; i++) {
+        assert(t_empty.box_xs[i] == 0);
+        assert(t_empty.box_ys[i] == 0);
+    }
+
+    assert(t_l.box_xs[0] == 1);
+    assert(t_l.box_xs[1] == 1);
+    assert(t_l.box_xs[2] == 1);
+    assert(t_l.box_xs[3] == 2);
+    assert(t_l.box_ys[0] == 0);
+    assert(t_l.box_ys[1] == 1);
+    assert(t_l.box_ys[2] == 2);
+    assert(t_l.box_ys[3] == 2);
+
+    assert(t_o.box_xs[0] == 1);
+    assert(t_o.box_xs[1] == 0);
+    assert(t_o.box_xs[2] == 0);
+    assert(t_o.box_xs[3] == 1);
+    assert(t_o.box_ys[0] == 0);
+    assert(t_o.box_ys[1] == 1);
+    assert(t_o.box_ys[2] == 0);
+    assert(t_o.box_ys[3] == 1);
+
+    assert(t_s.box_xs[0] == 2);
+    assert(t_s.box_xs[1] == 1);
+    assert(t_s.box_xs[2] == 1);
+    assert(t_s.box_xs[3] == 2);
+    assert(t_s.box_ys[0] == 1);
+    assert(t_s.box_ys[1] == 1);
+    assert(t_s.box_ys[2] == 0);
+    assert(t_s.box_ys[3] == 2);
+
+    // Test reset
+
+    resetTetromino(&t_o);
+    assert(t_o.tet_type == NO_PIECE);
+
+    // Test copy
+
+    copyTetromino(&t_empty, &t_l);
+    copyTetromino(&t_o, &t_s);
+    assert(t_empty.tet_type == t_l.tet_type);
+    assert(t_o.tet_type == t_s.tet_type);
+    for (int i = 0; i < TETROMINO_SIZE; i++) {
+        assert(t_empty.box_xs[i] == t_l.box_xs[i]);
+        assert(t_empty.box_ys[i] == t_l.box_ys[i]);
+        assert(t_o.box_xs[i] == t_s.box_xs[i]);
+        assert(t_o.box_ys[i] == t_s.box_ys[i]);
+    }
+}  
+
+void Grid_runTests(Grid* g) {
+    testReqStrLenFor();
+    testTetrominoFunctions(g);
 }

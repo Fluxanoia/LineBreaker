@@ -87,6 +87,8 @@ typedef struct Grid_ {
 
     // The score
     int score;
+    // The last used score texture
+    SDL_Texture* score_tex;
     // The dimensions for all the text elements
     int scoreTitleWidth;
     int scoreTitleHeight;
@@ -148,13 +150,15 @@ typedef struct Grid_ {
 } Grid;
 
 Grid* initialiseGrid();
-void wakeGrid(Grid* grid);
-void sleepGrid(Grid* grid);
-void updateGrid(Grid* grid);
-void drawGrid(Grid* grid, Display* d);
-void Grid_keyEvent(Grid* grid, SDL_KeyboardEvent e);
+void wakeGrid(Grid* g);
+void sleepGrid(Grid* g);
+void updateGrid(Grid* g);
+void drawGrid(Grid* g, Display* d);
+void Grid_keyEvent(Grid* g, SDL_KeyboardEvent e);
+void Grid_pause(Grid* g);
 void setGridPosition(Grid* g, int x, int y);
-bool Grid_dropRedraw(Grid* grid);
-void freeGrid(Grid* grid);
+bool Grid_dropRedraw(Grid* g);
+void Grid_runTests(Grid* g);
+void freeGrid(Grid* g);
 
 #endif

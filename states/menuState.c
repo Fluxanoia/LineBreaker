@@ -46,8 +46,7 @@ MenuState* initialiseMenuState(Display* d) {
     char* ts[NO_BUTTONS] = { BUTTON_NAME_1, BUTTON_NAME_2, BUTTON_NAME_3 };
     int xs[] = {BUTTON_OFF_X, BUTTON_OFF_X, BUTTON_OFF_X};
     int ys[] = {BUTTON_Y_1, BUTTON_Y_2, BUTTON_Y_3};
-    ms->buttonManager = initialiseButtonManager(3, ts, xs, ys, d);
-
+    ms->buttonManager = initialiseButtonManager(NO_BUTTONS, ts, xs, ys, d);
     return ms;
 }
 
@@ -73,7 +72,7 @@ void sleepMenuState(MenuState* ms) {
 }
 
 // Starts closing the state so it can transition smoothly to other states
-void pushState(MenuState* ms, StateType st) {
+void MenuState_pushState(MenuState* ms, StateType st) {
     ms->pushState = st;
     ms->coverSlide->id = 1;
     moveTweenValue(ms->coverSlide, EASE_OUT, SLIDE_OFF, 50, 55);
@@ -85,17 +84,17 @@ void pushState(MenuState* ms, StateType st) {
 }
 
 // Sifts through the possible button presses and acts accordingly
-void buttonEvent(MenuState* ms, int i) {
+void MenuState_buttonEvent(MenuState* ms, int i) {
     if (ms->coverSlide->id == 1) return;
     switch (i) {
         case 0:
-            pushState(ms, SINGLEPLAYER);
+            MenuState_pushState(ms, SINGLEPLAYER);
         break;
         case 1:
-            pushState(ms, MULTIPLAYER);
+            MenuState_pushState(ms, MULTIPLAYER);
         break;
         case 2:
-            pushState(ms, CLOSE);
+            MenuState_pushState(ms, CLOSE);
         break;
     }
 }
@@ -110,7 +109,7 @@ void updateMenuState(MenuState* ms) {
 
     updateButtonManager(ms->buttonManager);
     ms->redraw |= ButtonManager_dropRedraw(ms->buttonManager);
-    buttonEvent(ms, ButtonManager_dropClicked(ms->buttonManager));
+    MenuState_buttonEvent(ms, ButtonManager_dropClicked(ms->buttonManager));
 
     if (arrived(ms->coverSlide) && ms->coverSlide->id == 1) {
         ms->nextState = ms->pushState;
@@ -158,6 +157,8 @@ bool MenuState_dropRedraw(MenuState* ms) {
     }
     return false;
 }
+
+void MenuState_runTests(MenuState* ms) {}
 
 // Frees the MenuState
 void freeMenuState(MenuState* ms) {

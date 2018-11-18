@@ -45,7 +45,6 @@ void keyEvent(SDL_KeyboardEvent e) {
 void pollEvents() {
     // If there's no events, return
     if (SDL_PollEvent(NULL) == 0) return;
-    // Event types :: https://wiki.libsdl.org/SDL_EventType
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         switch(e.type) {
@@ -86,8 +85,15 @@ void update() {
 void draw() {
     // Draw the GSM
     if (gsm != NULL && drawGSM(gsm)) {
+        // Switch targets to the window
+	    SDL_SetRenderTarget(display->renderer, NULL);
+        // Add the texture
+        SDL_RenderClear(display->renderer);
+        SDL_RenderCopy(display->renderer, display->lastPresent, NULL, NULL);
         // Update the window
 	    SDL_RenderPresent(display->renderer);
+        // Switch target back to the texture
+	    SDL_SetRenderTarget(display->renderer, display->lastPresent);
     }
 }
 
@@ -126,8 +132,10 @@ int main(int argc, char const *argv[]) {
     printf("\n%s, starting up...\n", GAME_TITLE);
     
     // Read in the command line arguments
+    bool run_tests = false;
     StateType startingState = LOADING;
     for (int i = 1; i < argc; i++) {
+        if (strncmp(argv[i], "-test", 5) == 0) run_tests = true;
         if (strncmp(argv[i], "-aps", 4) == 0) PRINT_APS = true;
         if (strncmp(argv[i], "-l", 2) == 0)   startingState = MENU;
     }
@@ -152,6 +160,13 @@ int main(int argc, char const *argv[]) {
     display->renderer = P_(SDL_CreateRenderer(display->window, 
             -1, SDL_RENDERER_ACCELERATED));
     I_(SDL_SetRenderDrawBlendMode(display->renderer, SDL_BLENDMODE_BLEND));
+    
+    // Create the texture to render to
+    display->lastPresent = SDL_CreateTexture(display->renderer,
+            SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
+            SCREEN_WIDTH, SCREEN_HEIGHT);
+    SDL_SetRenderTarget(display->renderer, display->lastPresent);
+
 
     printf("Initialising resource manager...\n");
     display->resMan = initialiseResourceManager(display);
@@ -162,8 +177,14 @@ int main(int argc, char const *argv[]) {
     printf("Initialising the GSM...\n");
     gsm = initialiseGSM(display, startingState); 
 
-    printf("Start up complete, running the game...\n");
-    run();
+    if (run_tests) {
+        printf("Start up complete, running the tests...\n");        
+        GSM_runTests(gsm);
+        printf("\n --- ALL TESTS PASSED --- \n\n");
+    } else {
+        printf("Start up complete, running the game...\n");
+        run();
+    }
 
     printf("Freeing memory...\n");
     freeGSM(gsm);

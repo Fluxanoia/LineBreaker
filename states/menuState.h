@@ -35,6 +35,7 @@ void MenuState_mouseMotionEvent(MenuState* ms, SDL_MouseMotionEvent e);
 void MenuState_mouseButtonEvent(MenuState* ms, SDL_MouseButtonEvent e);
 void MenuState_keyEvent(MenuState* ms, SDL_KeyboardEvent e);
 bool MenuState_dropRedraw(MenuState* ms);
+void MenuState_runTests(MenuState* ms);
 void freeMenuState(MenuState* ms);
 
 #endif

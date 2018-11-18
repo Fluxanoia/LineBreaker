@@ -77,6 +77,7 @@ ResourceManager* initialiseResourceManager(Display* d) {
     rm->boxes = loadBMPTexture(d, "res/image/boxes.bmp");
     rm->board_back = loadPNGTexture(d, "res/image/boardback.png");
     rm->board_tab = loadPNGTexture(d, "res/image/boardtab.png");
+    rm->score_card = loadPNGTexture(d, "res/image/scorecard.png");
     return rm;
 }
 
@@ -94,6 +95,7 @@ void freeResourceManager(ResourceManager* rm) {
     SDL_DestroyTexture(rm->boxes);
     SDL_DestroyTexture(rm->board_back);
     SDL_DestroyTexture(rm->board_tab);
+    SDL_DestroyTexture(rm->score_card);
     free(rm->button_colour);
     free(rm->text_colour);
     free(rm);
@@ -104,5 +106,6 @@ void freeDisplay(Display* d) {
     freeResourceManager(d->resMan);
     SDL_DestroyRenderer(d->renderer);
     SDL_DestroyWindow(d->window);
+    SDL_DestroyTexture(d->lastPresent);
     free(d);
 }

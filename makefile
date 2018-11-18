@@ -1,7 +1,7 @@
 CC = clang
 CFLAGS = -std=c11 -Wall -pedantic -g
   
-LFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_image -lm -fsanitize=undefined
+LFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_image -lm -fsanitize=address
 
 FILES = *.c $\
 states/*.c $\

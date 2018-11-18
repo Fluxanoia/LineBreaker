@@ -105,6 +105,8 @@ bool LoadingState_dropRedraw(LoadingState* ls) {
     return false;
 }
 
+void LoadingState_runTests(LoadingState* ls) {}
+
 // Frees the LoadingState
 void freeLoadingState(LoadingState* ls) {
     freeTweenValue(ls->bgAlpha);
