@@ -9,6 +9,8 @@ Command line arguments:
 -l    : skips the loading screen
 
 Controls:
+    P - pauses the game
+    
     Singleplayer:
         A               - move piece left
         D               - move piece right
@@ -37,7 +39,3 @@ Required libraries: SDL2, SDL_ttf, SDL_image, math.h
 Uses the following fonts:
     Roboto     (under the Apache license - http://www.apache.org/licenses/LICENSE-2.0.txt)
     Diskoteque (freeware for personal use)
-
-Important points:
-    -redrawing
-    -testing
